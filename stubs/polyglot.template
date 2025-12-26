@@ -1,0 +1,30 @@
+:<<'BATCH'
+@echo off&setlocal
+set S=%~f0&set T=%TEMP%\pbin%RANDOM%&mkdir %T% 2>nul
+if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (set A=x86_64) else if "%PROCESSOR_ARCHITECTURE%"=="ARM64" (set A=aarch64) else (echo Unsupported arch&exit/b1)
+set G=windows-%A%
+for /f %%i in ('powershell -NoP -C "$c=[IO.File]::ReadAllBytes('%S%');$m=[Text.Encoding]::ASCII.GetBytes('__PBIN_PAYLOAD__');for($i=0;$i -lt $c.Length-16;$i++){$f=1;for($j=0;$j-lt16;$j++){if($c[$i+$j]-ne$m[$j]){$f=0;break}}if($f){$i;break}}"') do set O=%%i
+if not defined O (echo Marker not found&exit/b1)
+set/a H=O+16
+powershell -NoP -C "$f=[IO.File]::OpenRead('%S%');$f.Seek(%H%,'Begin')|Out-Null;$h=New-Object byte[] 64;$f.Read($h,0,64)|Out-Null;$ms=[BitConverter]::ToUInt32($h,8);$mb=New-Object byte[] $ms;$f.Read($mb,0,$ms)|Out-Null;$m=[Text.Encoding]::UTF8.GetString($mb)|ConvertFrom-Json;$e=$m.entries|?{$_.target-eq'%G%'};if(-not$e){exit 1};$f.Seek($e.offset,'Begin')|Out-Null;$d=New-Object byte[] $e.compressed_size;$f.Read($d,0,$e.compressed_size)|Out-Null;$f.Close();[IO.File]::WriteAllBytes('%T%\a.exe',$d)"
+if errorlevel 1 (rmdir/s/q %T% 2>nul&exit/b1)
+%T%\a.exe %*&set E=%ERRORLEVEL%&rmdir/s/q %T% 2>nul&exit/b%E%
+BATCH
+#!/bin/sh
+set -ef;S="$0";D="${TMPDIR:-/tmp}";W=$(mktemp -d "$D/pbin.XXXXXX");trap 'rm -rf "$W"' EXIT
+case $(uname -s) in Linux)O=linux;;Darwin)O=darwin;;*)echo "Bad OS">&2;exit 1;;esac
+case $(uname -m) in x86_64)A=x86_64;;aarch64|arm64)A=aarch64;;riscv64)A=riscv64;;*)echo "Bad arch">&2;exit 1;;esac
+T="${O}-${A}";M=$(LC_ALL=C grep -abo __PBIN_PAYLOAD__ "$S"|tail -1|cut -d: -f1)
+[ -z "$M" ]&&echo "No marker">&2&&exit 1;H=$((M+16))
+R=$(dd if="$S" bs=1 skip=$H count=64 2>/dev/null|od -An -tu1|tr -s ' \n' ' ')
+b(){ echo "$R"|cut -d' ' -f$((1+$1));}
+MS=$(($(b 9)+$(b 10)*256+$(b 11)*65536+$(b 12)*16777216))
+MO=$((H+64));J=$(dd if="$S" bs=1 skip=$MO count=$MS 2>/dev/null)
+EO="";ES="";CT=""
+for L in $(echo "$J"|tr '{}[],' '\n');do
+K=$(echo "$L"|cut -d: -f1|tr -d ' "');V=$(echo "$L"|cut -d: -f2|tr -d ' "')
+case "$K" in target)CT="$V";;offset)[ "$CT" = "$T" ]&&EO="$V";;compressed_size)[ "$CT" = "$T" ]&&ES="$V";;esac
+done
+[ -z "$EO" ]&&echo "Target $T not found">&2&&exit 1
+B="$W/a";dd if="$S" bs=1 skip=$EO count=$ES of="$B" 2>/dev/null;chmod +x "$B";"$B" "$@"
+__PBIN_PAYLOAD__

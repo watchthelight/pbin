@@ -1,0 +1,12 @@
+[package]
+name = "hello"
+version = "1.0.0"
+edition = "2021"
+description = "Test payload for PBIN - cross-platform hello with system detection"
+
+[[bin]]
+name = "hello"
+path = "src/main.rs"
+
+# No dependencies - std only!
+[dependencies]

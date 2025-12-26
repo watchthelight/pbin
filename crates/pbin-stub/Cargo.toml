@@ -1,0 +1,9 @@
+[package]
+name = "pbin-stub"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Polyglot stub generator for PBIN files"
+
+[dependencies]
+pbin-core.workspace = true

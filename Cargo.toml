@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/pbin-core",
+    "crates/pbin-pack",
+    "crates/pbin-stub",
+    "crates/pbin-unpack",
+    "test-payload/hello",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/watchthelight/pbin"
+
+[workspace.dependencies]
+pbin-core = { path = "crates/pbin-core" }
+pbin-stub = { path = "crates/pbin-stub" }
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
