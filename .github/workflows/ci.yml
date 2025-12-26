@@ -67,16 +67,18 @@ jobs:
           echo "yes" | ./hello.pbin
           echo "Test passed on Linux ARM64!"
 
-  # Test on macOS x86_64
+  # Test on macOS x86_64 (cross-compile from ARM64)
   test-macos-x86_64:
     name: macOS x86_64
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
 
-      - name: Build hello payload
-        run: cargo build --release -p hello
+      - name: Build hello payload (cross-compile)
+        run: cargo build --release -p hello --target x86_64-apple-darwin
 
       - name: Build pbin-pack
         run: cargo build --release -p pbin-pack
@@ -86,14 +88,14 @@ jobs:
           ./target/release/pbin-pack \
             --name hello \
             --version 1.0.0 \
-            --darwin-x86_64 ./target/release/hello \
+            --darwin-x86_64 ./target/x86_64-apple-darwin/release/hello \
             --output hello.pbin
 
-      - name: Test hello.pbin
+      - name: Test hello.pbin (via Rosetta)
         run: |
           chmod +x hello.pbin
-          echo "yes" | ./hello.pbin
-          echo "Test passed on macOS x86_64!"
+          echo "yes" | arch -x86_64 ./hello.pbin
+          echo "Test passed on macOS x86_64 (via Rosetta)!"
 
   # Test on macOS ARM64 (Apple Silicon)
   test-macos-arm64:

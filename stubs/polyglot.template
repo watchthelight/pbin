@@ -26,5 +26,5 @@ K=$(echo "$L"|cut -d: -f1|tr -d ' "');V=$(echo "$L"|cut -d: -f2|tr -d ' "')
 case "$K" in target)CT="$V";;offset)[ "$CT" = "$T" ]&&EO="$V";;compressed_size)[ "$CT" = "$T" ]&&ES="$V";;esac
 done
 [ -z "$EO" ]&&echo "Target $T not found">&2&&exit 1
-B="$W/a";dd if="$S" bs=1 skip=$EO count=$ES of="$B" 2>/dev/null;chmod +x "$B";"$B" "$@"
+B="$W/a";dd if="$S" bs=1 skip=$EO count=$ES of="$B" 2>/dev/null;chmod +x "$B";"$B" "$@";exit $?
 __PBIN_PAYLOAD__
