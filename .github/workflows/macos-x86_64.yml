@@ -9,15 +9,18 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
       - run: brew install zstd
-      - run: cargo build --release -p hello -p pbin-pack
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target x86_64-apple-darwin
       - run: |
           ./target/release/pbin-pack --name hello --version 1.0.0 \
             --compress balanced --no-bcj \
-            --darwin-x86_64 ./target/release/hello \
+            --darwin-x86_64 ./target/x86_64-apple-darwin/release/hello \
             --output hello.pbin
-      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | arch -x86_64 ./hello.pbin
