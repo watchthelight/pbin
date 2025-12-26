@@ -21,14 +21,40 @@ OPTIONS:
     --version <VERSION>         Application version (default: 1.0.0)
     --output <PATH>             Output .pbin file (required)
 
-    Platform binaries:
+    Linux binaries:
     --linux-x86_64 <PATH>       Linux x86_64 binary
     --linux-aarch64 <PATH>      Linux aarch64 binary
     --linux-riscv64 <PATH>      Linux RISC-V 64 binary
+    --linux-armv7 <PATH>        Linux ARMv7 binary
+    --linux-ppc64le <PATH>      Linux PowerPC 64 LE binary
+    --linux-s390x <PATH>        Linux s390x binary
+    --linux-mips64 <PATH>       Linux MIPS64 binary
+    --linux-i686 <PATH>         Linux i686 (32-bit x86) binary
+    --linux-loongarch64 <PATH>  Linux LoongArch64 binary
+
+    macOS binaries:
     --darwin-x86_64 <PATH>      macOS x86_64 binary
     --darwin-aarch64 <PATH>     macOS aarch64 binary
+
+    Windows binaries:
     --windows-x86_64 <PATH>     Windows x86_64 binary (.exe)
     --windows-aarch64 <PATH>    Windows aarch64 binary (.exe)
+    --windows-x86 <PATH>        Windows x86 (32-bit) binary (.exe)
+
+    BSD binaries:
+    --freebsd-x86_64 <PATH>     FreeBSD x86_64 binary
+    --freebsd-aarch64 <PATH>    FreeBSD aarch64 binary
+    --netbsd-x86_64 <PATH>      NetBSD x86_64 binary
+    --openbsd-x86_64 <PATH>     OpenBSD x86_64 binary
+
+    Mobile binaries:
+    --android-aarch64 <PATH>    Android aarch64 binary
+    --android-armv7 <PATH>      Android ARMv7 binary
+    --android-x86_64 <PATH>     Android x86_64 binary
+    --ios-aarch64 <PATH>        iOS aarch64 binary
+
+    WebAssembly:
+    --wasi-wasm32 <PATH>        WASI wasm32 module
 
     Compression options:
     --compress <LEVEL>          Compression level: fast, balanced, maximum (default: balanced)
@@ -115,6 +141,7 @@ fn parse_args() -> Result<Config, String> {
             "--no-dict" => {
                 use_dict = false;
             }
+            // Linux targets
             "--linux-x86_64" => {
                 i += 1;
                 binaries.insert(
@@ -136,6 +163,49 @@ fn parse_args() -> Result<Config, String> {
                     PathBuf::from(args.get(i).ok_or("--linux-riscv64 requires a value")?),
                 );
             }
+            "--linux-armv7" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxArmv7,
+                    PathBuf::from(args.get(i).ok_or("--linux-armv7 requires a value")?),
+                );
+            }
+            "--linux-ppc64le" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxPpc64le,
+                    PathBuf::from(args.get(i).ok_or("--linux-ppc64le requires a value")?),
+                );
+            }
+            "--linux-s390x" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxS390x,
+                    PathBuf::from(args.get(i).ok_or("--linux-s390x requires a value")?),
+                );
+            }
+            "--linux-mips64" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxMips64,
+                    PathBuf::from(args.get(i).ok_or("--linux-mips64 requires a value")?),
+                );
+            }
+            "--linux-i686" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxI686,
+                    PathBuf::from(args.get(i).ok_or("--linux-i686 requires a value")?),
+                );
+            }
+            "--linux-loongarch64" => {
+                i += 1;
+                binaries.insert(
+                    Target::LinuxLoongarch64,
+                    PathBuf::from(args.get(i).ok_or("--linux-loongarch64 requires a value")?),
+                );
+            }
+            // macOS targets
             "--darwin-x86_64" => {
                 i += 1;
                 binaries.insert(
@@ -150,6 +220,7 @@ fn parse_args() -> Result<Config, String> {
                     PathBuf::from(args.get(i).ok_or("--darwin-aarch64 requires a value")?),
                 );
             }
+            // Windows targets
             "--windows-x86_64" => {
                 i += 1;
                 binaries.insert(
@@ -162,6 +233,79 @@ fn parse_args() -> Result<Config, String> {
                 binaries.insert(
                     Target::WindowsAarch64,
                     PathBuf::from(args.get(i).ok_or("--windows-aarch64 requires a value")?),
+                );
+            }
+            "--windows-x86" => {
+                i += 1;
+                binaries.insert(
+                    Target::WindowsX86,
+                    PathBuf::from(args.get(i).ok_or("--windows-x86 requires a value")?),
+                );
+            }
+            // BSD targets
+            "--freebsd-x86_64" => {
+                i += 1;
+                binaries.insert(
+                    Target::FreebsdX86_64,
+                    PathBuf::from(args.get(i).ok_or("--freebsd-x86_64 requires a value")?),
+                );
+            }
+            "--freebsd-aarch64" => {
+                i += 1;
+                binaries.insert(
+                    Target::FreebsdAarch64,
+                    PathBuf::from(args.get(i).ok_or("--freebsd-aarch64 requires a value")?),
+                );
+            }
+            "--netbsd-x86_64" => {
+                i += 1;
+                binaries.insert(
+                    Target::NetbsdX86_64,
+                    PathBuf::from(args.get(i).ok_or("--netbsd-x86_64 requires a value")?),
+                );
+            }
+            "--openbsd-x86_64" => {
+                i += 1;
+                binaries.insert(
+                    Target::OpenbsdX86_64,
+                    PathBuf::from(args.get(i).ok_or("--openbsd-x86_64 requires a value")?),
+                );
+            }
+            // Mobile targets
+            "--android-aarch64" => {
+                i += 1;
+                binaries.insert(
+                    Target::AndroidAarch64,
+                    PathBuf::from(args.get(i).ok_or("--android-aarch64 requires a value")?),
+                );
+            }
+            "--android-armv7" => {
+                i += 1;
+                binaries.insert(
+                    Target::AndroidArmv7,
+                    PathBuf::from(args.get(i).ok_or("--android-armv7 requires a value")?),
+                );
+            }
+            "--android-x86_64" => {
+                i += 1;
+                binaries.insert(
+                    Target::AndroidX86_64,
+                    PathBuf::from(args.get(i).ok_or("--android-x86_64 requires a value")?),
+                );
+            }
+            "--ios-aarch64" => {
+                i += 1;
+                binaries.insert(
+                    Target::IosAarch64,
+                    PathBuf::from(args.get(i).ok_or("--ios-aarch64 requires a value")?),
+                );
+            }
+            // WebAssembly
+            "--wasi-wasm32" => {
+                i += 1;
+                binaries.insert(
+                    Target::WasiWasm32,
+                    PathBuf::from(args.get(i).ok_or("--wasi-wasm32 requires a value")?),
                 );
             }
             arg => {
@@ -198,15 +342,7 @@ fn read_binary(path: &PathBuf) -> io::Result<Vec<u8>> {
 }
 
 fn target_to_string(target: Target) -> String {
-    match target {
-        Target::LinuxX86_64 => "linux-x86_64".to_string(),
-        Target::LinuxAarch64 => "linux-aarch64".to_string(),
-        Target::LinuxRiscv64 => "linux-riscv64".to_string(),
-        Target::DarwinX86_64 => "darwin-x86_64".to_string(),
-        Target::DarwinAarch64 => "darwin-aarch64".to_string(),
-        Target::WindowsX86_64 => "windows-x86_64".to_string(),
-        Target::WindowsAarch64 => "windows-aarch64".to_string(),
-    }
+    target.as_str().to_string()
 }
 
 fn pack(config: Config) -> Result<(), Box<dyn std::error::Error>> {

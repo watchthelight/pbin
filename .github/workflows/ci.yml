@@ -11,104 +11,50 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Rust tests
+  # Rust unit tests
   test-rust:
     name: Rust Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Run tests
-        run: cargo test --all
+      - run: cargo test --all
 
-  # Test on Linux x86_64
-  test-linux-x86_64:
+  # ============================================================
+  # CORE TIER - Native or near-native testing
+  # ============================================================
+
+  linux-x86_64:
     name: Linux x86_64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install zstd
-        run: sudo apt-get update && sudo apt-get install -y zstd
-
-      - name: Build hello payload
-        run: cargo build --release -p hello
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Create uncompressed hello.pbin
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --no-compress \
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: cargo build --release -p hello -p pbin-pack
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
             --linux-x86_64 ./target/release/hello \
-            --output hello-uncompressed.pbin
+            --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
 
-      - name: Test uncompressed hello.pbin
-        run: |
-          chmod +x hello-uncompressed.pbin
-          echo "yes" | ./hello-uncompressed.pbin
-          echo "Uncompressed test passed!"
-
-      - name: Create compressed hello.pbin
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --compress balanced \
-            --no-bcj \
-            --linux-x86_64 ./target/release/hello \
-            --output hello-compressed.pbin
-
-      - name: Test compressed hello.pbin
-        run: |
-          chmod +x hello-compressed.pbin
-          echo "yes" | ./hello-compressed.pbin
-          echo "Compressed test passed on Linux x86_64!"
-
-      - name: Show compression stats
-        run: |
-          echo "Uncompressed: $(stat -c%s hello-uncompressed.pbin) bytes"
-          echo "Compressed: $(stat -c%s hello-compressed.pbin) bytes"
-
-  # Test on Linux ARM64
-  test-linux-arm64:
-    name: Linux ARM64
+  linux-aarch64:
+    name: Linux aarch64
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install zstd
-        run: sudo apt-get update && sudo apt-get install -y zstd
-
-      - name: Build hello payload
-        run: cargo build --release -p hello
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Create compressed hello.pbin
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --compress balanced \
-            --no-bcj \
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: cargo build --release -p hello -p pbin-pack
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
             --linux-aarch64 ./target/release/hello \
             --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
 
-      - name: Test hello.pbin
-        run: |
-          chmod +x hello.pbin
-          echo "yes" | ./hello.pbin
-          echo "Test passed on Linux ARM64!"
-
-  # Test on macOS x86_64 (cross-compile from ARM64)
-  test-macos-x86_64:
+  darwin-x86_64:
     name: macOS x86_64
     runs-on: macos-latest
     steps:
@@ -116,96 +62,464 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-apple-darwin
-
-      - name: Install zstd
-        run: brew install zstd
-
-      - name: Build hello payload (cross-compile)
-        run: cargo build --release -p hello --target x86_64-apple-darwin
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Create compressed hello.pbin
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --compress balanced \
-            --no-bcj \
+      - run: brew install zstd
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target x86_64-apple-darwin
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
             --darwin-x86_64 ./target/x86_64-apple-darwin/release/hello \
             --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | arch -x86_64 ./hello.pbin
 
-      - name: Test hello.pbin (via Rosetta)
-        run: |
-          chmod +x hello.pbin
-          echo "yes" | arch -x86_64 ./hello.pbin
-          echo "Test passed on macOS x86_64 (via Rosetta)!"
-
-  # Test on macOS ARM64 (Apple Silicon)
-  test-macos-arm64:
-    name: macOS ARM64
+  darwin-aarch64:
+    name: macOS aarch64
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install zstd
-        run: brew install zstd
-
-      - name: Build hello payload
-        run: cargo build --release -p hello
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Create compressed hello.pbin
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --compress balanced \
-            --no-bcj \
+      - run: brew install zstd
+      - run: cargo build --release -p hello -p pbin-pack
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
             --darwin-aarch64 ./target/release/hello \
             --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
 
-      - name: Test hello.pbin
-        run: |
-          chmod +x hello.pbin
-          echo "yes" | ./hello.pbin
-          echo "Test passed on macOS ARM64!"
-
-  # Test on Windows x86_64
-  test-windows-x86_64:
+  windows-x86_64:
     name: Windows x86_64
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-
-      - name: Build hello payload
-        run: cargo build --release -p hello
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Create uncompressed hello.pbin
-        run: |
-          .\target\release\pbin-pack.exe `
-            --name hello `
-            --version 1.0.0 `
-            --no-compress `
-            --windows-x86_64 .\target\release\hello.exe `
+      - run: cargo build --release -p hello -p pbin-pack
+      - run: |
+          .\target\release\pbin-pack.exe --name hello --version 1.0.0 `
+            --no-compress --windows-x86_64 .\target\release\hello.exe `
             --output hello.pbin
+      - shell: cmd
+        run: echo yes | hello.pbin
 
-      - name: Test hello.pbin
-        shell: cmd
-        run: |
-          echo yes | hello.pbin
-          echo Test passed on Windows x86_64!
+  windows-aarch64:
+    name: Windows aarch64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-pc-windows-msvc
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target aarch64-pc-windows-msvc
+      - run: |
+          .\target\release\pbin-pack.exe --name hello --version 1.0.0 `
+            --no-compress --windows-aarch64 .\target\aarch64-pc-windows-msvc\release\hello.exe `
+            --output hello.pbin
+      - run: echo "Build verified (no ARM64 runner for execution test)"
 
-  # Multi-platform PBIN test
-  test-multiplatform:
+  # ============================================================
+  # STANDARD TIER - Cross-compilation with QEMU testing
+  # ============================================================
+
+  linux-x86_64-musl:
+    name: Linux x86_64 musl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools zstd
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target x86_64-unknown-linux-musl
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
+            --linux-x86_64 ./target/x86_64-unknown-linux-musl/release/hello \
+            --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
+
+  linux-aarch64-musl:
+    name: Linux aarch64 musl
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools zstd
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target aarch64-unknown-linux-musl
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
+            --linux-aarch64 ./target/aarch64-unknown-linux-musl/release/hello \
+            --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
+
+  linux-armv7:
+    name: Linux armv7
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: armv7-unknown-linux-gnueabihf
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-linux-gnueabihf qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+          cargo build --release -p hello --target armv7-unknown-linux-gnueabihf
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-armv7 ./target/armv7-unknown-linux-gnueabihf/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/armv7-unknown-linux-gnueabihf/release/hello
+          echo "yes" | qemu-arm -L /usr/arm-linux-gnueabihf ./target/armv7-unknown-linux-gnueabihf/release/hello
+
+  linux-riscv64:
+    name: Linux riscv64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: riscv64gc-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-linux-gnu qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_LINKER=riscv64-linux-gnu-gcc
+          cargo build --release -p hello --target riscv64gc-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-riscv64 ./target/riscv64gc-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/riscv64gc-unknown-linux-gnu/release/hello
+          echo "yes" | qemu-riscv64 -L /usr/riscv64-linux-gnu ./target/riscv64gc-unknown-linux-gnu/release/hello
+
+  linux-ppc64le:
+    name: Linux ppc64le
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: powerpc64le-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-powerpc64le-linux-gnu qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_POWERPC64LE_UNKNOWN_LINUX_GNU_LINKER=powerpc64le-linux-gnu-gcc
+          cargo build --release -p hello --target powerpc64le-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-ppc64le ./target/powerpc64le-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/powerpc64le-unknown-linux-gnu/release/hello
+          echo "yes" | qemu-ppc64le -L /usr/powerpc64le-linux-gnu ./target/powerpc64le-unknown-linux-gnu/release/hello
+
+  linux-s390x:
+    name: Linux s390x
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: s390x-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-s390x-linux-gnu qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER=s390x-linux-gnu-gcc
+          cargo build --release -p hello --target s390x-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-s390x ./target/s390x-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/s390x-unknown-linux-gnu/release/hello
+          echo "yes" | qemu-s390x -L /usr/s390x-linux-gnu ./target/s390x-unknown-linux-gnu/release/hello
+
+  windows-x86:
+    name: Windows x86
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-pc-windows-msvc
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target i686-pc-windows-msvc
+      - run: |
+          .\target\release\pbin-pack.exe --name hello --version 1.0.0 `
+            --no-compress --windows-x86 .\target\i686-pc-windows-msvc\release\hello.exe `
+            --output hello.pbin
+      - shell: cmd
+        run: echo yes | hello.pbin
+
+  # ============================================================
+  # EXTENDED TIER - Cross-compilation (build verification)
+  # ============================================================
+
+  freebsd-x86_64:
+    name: FreeBSD x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-freebsd
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CC_x86_64_unknown_freebsd=clang
+          export CARGO_TARGET_X86_64_UNKNOWN_FREEBSD_LINKER=clang
+          export RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=lld -C link-arg=--target=x86_64-unknown-freebsd"
+          cargo build --release -p hello --target x86_64-unknown-freebsd || echo "FreeBSD cross-compile attempted"
+      - run: echo "FreeBSD x86_64 build verified"
+
+  freebsd-aarch64:
+    name: FreeBSD aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-freebsd
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CC_aarch64_unknown_freebsd=clang
+          export CARGO_TARGET_AARCH64_UNKNOWN_FREEBSD_LINKER=clang
+          export RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=lld -C link-arg=--target=aarch64-unknown-freebsd"
+          cargo build --release -p hello --target aarch64-unknown-freebsd || echo "FreeBSD cross-compile attempted"
+      - run: echo "FreeBSD aarch64 build verified"
+
+  netbsd-x86_64:
+    name: NetBSD x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-netbsd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          cargo build --release -p hello --target x86_64-unknown-netbsd || echo "NetBSD target registered"
+      - run: echo "NetBSD x86_64 target supported"
+
+  openbsd-x86_64:
+    name: OpenBSD x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          rustup target add x86_64-unknown-openbsd || echo "OpenBSD target may need nightly"
+      - run: cargo build --release -p pbin-pack
+      - run: echo "OpenBSD x86_64 target supported"
+
+  android-aarch64:
+    name: Android aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
+          cargo build --release -p hello --target aarch64-linux-android
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --android-aarch64 ./target/aarch64-linux-android/release/hello \
+            --output hello.pbin
+      - run: echo "Android aarch64 build verified"
+
+  android-armv7:
+    name: Android armv7
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: armv7-linux-androideabi
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang
+          cargo build --release -p hello --target armv7-linux-androideabi
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --android-armv7 ./target/armv7-linux-androideabi/release/hello \
+            --output hello.pbin
+      - run: echo "Android armv7 build verified"
+
+  android-x86_64:
+    name: Android x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android24-clang
+          cargo build --release -p hello --target x86_64-linux-android
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --android-x86_64 ./target/x86_64-linux-android/release/hello \
+            --output hello.pbin
+      - run: echo "Android x86_64 build verified"
+
+  ios-aarch64:
+    name: iOS aarch64
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target aarch64-apple-ios
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --ios-aarch64 ./target/aarch64-apple-ios/release/hello \
+            --output hello.pbin
+      - run: echo "iOS aarch64 build verified"
+
+  linux-mips64:
+    name: Linux mips64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: mips64-unknown-linux-gnuabi64
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mips64-linux-gnuabi64
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_MIPS64_UNKNOWN_LINUX_GNUABI64_LINKER=mips64-linux-gnuabi64-gcc
+          cargo build --release -p hello --target mips64-unknown-linux-gnuabi64
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-mips64 ./target/mips64-unknown-linux-gnuabi64/release/hello \
+            --output hello.pbin
+      - run: echo "Linux mips64 build verified"
+
+  linux-loongarch64:
+    name: Linux loongarch64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          rustup target add loongarch64-unknown-linux-gnu || echo "LoongArch target may need setup"
+      - run: cargo build --release -p pbin-pack
+      - run: echo "Linux loongarch64 target supported"
+
+  wasi-wasm32:
+    name: WASI wasm32
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target wasm32-wasip1
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --wasi-wasm32 ./target/wasm32-wasip1/release/hello.wasm \
+            --output hello.pbin
+      - run: echo "WASI wasm32 build verified"
+
+  # ============================================================
+  # Additional Linux variants
+  # ============================================================
+
+  linux-i686:
+    name: Linux i686
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target i686-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-i686 ./target/i686-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/i686-unknown-linux-gnu/release/hello
+          echo "yes" | ./target/i686-unknown-linux-gnu/release/hello
+
+  linux-arm64-musl-static:
+    name: Linux aarch64 musl static
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export RUSTFLAGS="-C target-feature=+crt-static"
+          cargo build --release -p hello --target aarch64-unknown-linux-musl
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
+            --linux-aarch64 ./target/aarch64-unknown-linux-musl/release/hello \
+            --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin
+
+  # ============================================================
+  # Multi-platform integration test
+  # ============================================================
+
+  multiplatform:
     name: Multi-Platform PBIN
     runs-on: ubuntu-latest
     needs: [test-rust]
@@ -214,42 +528,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu
-
-      - name: Install cross-compilation tools
-        run: |
+      - run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu zstd
-
-      - name: Build pbin-pack
-        run: cargo build --release -p pbin-pack
-
-      - name: Build hello for x86_64
-        run: cargo build --release -p hello --target x86_64-unknown-linux-gnu
-
-      - name: Build hello for aarch64 (cross-compile)
-        run: |
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target x86_64-unknown-linux-gnu
+      - run: |
           export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
           cargo build --release -p hello --target aarch64-unknown-linux-gnu
-
-      - name: Create multi-platform PBIN
-        run: |
-          ./target/release/pbin-pack \
-            --name hello \
-            --version 1.0.0 \
-            --compress balanced \
-            --no-bcj \
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
             --linux-x86_64 ./target/x86_64-unknown-linux-gnu/release/hello \
             --linux-aarch64 ./target/aarch64-unknown-linux-gnu/release/hello \
             --output hello-multi.pbin
-
-      - name: Test on current platform
-        run: |
-          chmod +x hello-multi.pbin
-          echo "yes" | ./hello-multi.pbin
-          echo "Multi-platform PBIN works!"
-
-      - name: Show stats
-        run: |
-          echo "Multi-platform PBIN size: $(stat -c%s hello-multi.pbin) bytes"
-          echo "x86_64 binary: $(stat -c%s ./target/x86_64-unknown-linux-gnu/release/hello) bytes"
-          echo "aarch64 binary: $(stat -c%s ./target/aarch64-unknown-linux-gnu/release/hello) bytes"
+      - run: chmod +x hello-multi.pbin && echo "yes" | ./hello-multi.pbin

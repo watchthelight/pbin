@@ -1,56 +1,35 @@
 # PBIN - Polyglot Binary Format
 
-[![CI](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=CI)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Rust Tests](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Tests)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
 
 A revolutionary file format and toolchain that enables single-file, cross-platform executables. A `.pbin` file runs on any supported system with just `./file.pbin` (Unix) or double-click (Windows) - no installation, no runtime dependencies, no setup.
 
 ## Features
 
-- **30 Platform Support**: One file runs on Linux, macOS, Windows, BSD, Android, iOS, and more
+- **26+ Platform Support**: One file runs on Linux, macOS, Windows, BSD, Android, iOS, and more
 - **Smart Compression**: ~50-60% size reduction with zstd compression
 - **Zero Dependencies**: Polyglot stub requires no external tools (except zstd for compressed mode)
 - **Simple CLI**: Pack binaries with a single command
 
-## Supported Platforms (30 Targets)
+## Platform CI Status
 
-### Core Tier (CI Tested)
-| Platform | Target | CI Status |
-|----------|--------|-----------|
-| ![Linux](https://img.shields.io/badge/Linux-x86__64-FCC624?logo=linux&logoColor=black) | `linux-x86_64` | ✅ Tested |
-| ![Linux](https://img.shields.io/badge/Linux-aarch64-FCC624?logo=linux&logoColor=black) | `linux-aarch64` | ✅ Tested |
-| ![macOS](https://img.shields.io/badge/macOS-x86__64-000000?logo=apple&logoColor=white) | `darwin-x86_64` | ✅ Rosetta |
-| ![macOS](https://img.shields.io/badge/macOS-aarch64-000000?logo=apple&logoColor=white) | `darwin-aarch64` | ✅ Tested |
-| ![Windows](https://img.shields.io/badge/Windows-x86__64-0078D6?logo=windows&logoColor=white) | `windows-x86_64` | ✅ Tested |
-| ![Windows](https://img.shields.io/badge/Windows-aarch64-0078D6?logo=windows&logoColor=white) | `windows-aarch64` | 🔧 Supported |
+### Core Tier
+| | | | | | |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| [![Linux x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![macOS x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=macOS%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![macOS aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=macOS%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Windows x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Windows%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Windows aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Windows%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) |
 
 ### Standard Tier
-| Platform | Target | Status |
-|----------|--------|--------|
-| ![Linux](https://img.shields.io/badge/Linux-x86__64__musl-FCC624?logo=linux&logoColor=black) | `linux-x86_64-musl` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-aarch64__musl-FCC624?logo=linux&logoColor=black) | `linux-aarch64-musl` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-armv7-FCC624?logo=linux&logoColor=black) | `linux-armv7` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-riscv64-FCC624?logo=linux&logoColor=black) | `linux-riscv64` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-ppc64le-FCC624?logo=linux&logoColor=black) | `linux-ppc64le` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-s390x-FCC624?logo=linux&logoColor=black) | `linux-s390x` | 🔧 Supported |
-| ![Windows](https://img.shields.io/badge/Windows-x86-0078D6?logo=windows&logoColor=white) | `windows-x86` | 🔧 Supported |
+| | | | | | | |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| [![Linux x86_64 musl](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20musl%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux aarch64 musl](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20musl%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux armv7](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20armv7)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux riscv64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20riscv64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux ppc64le](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20ppc64le)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux s390x](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20s390x)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Windows x86](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Windows%20x86)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) |
 
 ### Extended Tier
-| Platform | Target | Status |
-|----------|--------|--------|
-| ![FreeBSD](https://img.shields.io/badge/FreeBSD-x86__64-AB2B28?logo=freebsd&logoColor=white) | `freebsd-x86_64` | 🔧 Supported |
-| ![FreeBSD](https://img.shields.io/badge/FreeBSD-aarch64-AB2B28?logo=freebsd&logoColor=white) | `freebsd-aarch64` | 🔧 Supported |
-| ![NetBSD](https://img.shields.io/badge/NetBSD-x86__64-FF6600?logo=netbsd&logoColor=white) | `netbsd-x86_64` | 🔧 Supported |
-| ![OpenBSD](https://img.shields.io/badge/OpenBSD-x86__64-F2CA30?logo=openbsd&logoColor=black) | `openbsd-x86_64` | 🔧 Supported |
-| ![Android](https://img.shields.io/badge/Android-aarch64-3DDC84?logo=android&logoColor=white) | `android-aarch64` | 🔧 Supported |
-| ![Android](https://img.shields.io/badge/Android-armv7-3DDC84?logo=android&logoColor=white) | `android-armv7` | 🔧 Supported |
-| ![Android](https://img.shields.io/badge/Android-x86__64-3DDC84?logo=android&logoColor=white) | `android-x86_64` | 🔧 Supported |
-| ![iOS](https://img.shields.io/badge/iOS-aarch64-000000?logo=ios&logoColor=white) | `ios-aarch64` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-mips64-FCC624?logo=linux&logoColor=black) | `linux-mips64` | 🔧 Supported |
-| ![Linux](https://img.shields.io/badge/Linux-loongarch64-FCC624?logo=linux&logoColor=black) | `linux-loongarch64` | 🔧 Supported |
-| ![WASI](https://img.shields.io/badge/WASI-wasm32-654FF0?logo=webassembly&logoColor=white) | `wasi-wasm32` | 🔧 Supported |
-
-**Legend**: ✅ CI Tested | 🔧 Supported (not CI tested)
+| | | | | |
+|:-:|:-:|:-:|:-:|:-:|
+| [![FreeBSD x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=FreeBSD%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![FreeBSD aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=FreeBSD%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![NetBSD x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=NetBSD%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![OpenBSD x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=OpenBSD%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux i686](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20i686)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) |
+| [![Android aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Android%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Android armv7](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Android%20armv7)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Android x86_64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Android%20x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![iOS aarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=iOS%20aarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![WASI wasm32](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=WASI%20wasm32)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) |
+| [![Linux mips64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20mips64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Linux loongarch64](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Linux%20loongarch64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | [![Multi-Platform](https://img.shields.io/github/actions/workflow/status/watchthelight/pbin/ci.yml?branch=main&label=Multi-Platform)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml) | | |
 
 **Note**: Compressed PBINs require `zstd` on the target system. Uncompressed PBINs work everywhere with no dependencies.
 
