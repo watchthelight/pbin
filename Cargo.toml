@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "crates/pbin-core",
+    "crates/pbin-compress",
     "crates/pbin-pack",
     "crates/pbin-stub",
     "crates/pbin-unpack",
@@ -16,6 +17,7 @@ repository = "https://github.com/watchthelight/pbin"
 
 [workspace.dependencies]
 pbin-core = { path = "crates/pbin-core" }
+pbin-compress = { path = "crates/pbin-compress" }
 pbin-stub = { path = "crates/pbin-stub" }
 
 [profile.release]

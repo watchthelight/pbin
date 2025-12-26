@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Status:** Draft
-**Last Updated:** 2024
+**Last Updated:** December 2025
 
 ## Overview
 
@@ -23,7 +23,7 @@ When executed, the polyglot stub detects the current platform, extracts the appr
 │ Size: Variable, typically 2-4 KB                            │
 ├─────────────────────────────────────────────────────────────┤
 │ PAYLOAD MARKER                                              │
-│ "__PBIN_PAYLOAD__" (17 bytes)                               │
+│ "__PBIN_PAYLOAD__" (16 bytes)                               │
 ├─────────────────────────────────────────────────────────────┤
 │ PBIN HEADER (Fixed: 64 bytes)                               │
 ├─────────────────────────────────────────────────────────────┤
@@ -69,7 +69,7 @@ The stub should be under 4KB to minimize overhead.
 
 ## Payload Marker
 
-The literal ASCII string `__PBIN_PAYLOAD__` (17 bytes) marks the end of the polyglot stub and the beginning of the binary payload section. This allows the stub to locate the payload using simple string search.
+The literal ASCII string `__PBIN_PAYLOAD__` (16 bytes) marks the end of the polyglot stub and the beginning of the binary payload section. This allows the stub to locate the payload using simple string search.
 
 ## PBIN Header
 
@@ -142,12 +142,28 @@ JSON document following the header. Size specified in header's `manifest_size` f
 | ID | Algorithm | Notes |
 |----|-----------|-------|
 | 0 | None | Raw binary, no compression |
-| 1 | Zstandard | Recommended, best ratio |
-| 2 | LZ4 | Faster decompression |
+| 1 | Zstandard | Recommended, best ratio (~50-60% savings) |
+| 2 | LZ4 | Reserved for future use |
 
-### Compression Level
+### Compression Levels
 
-For Zstandard, level 19 is recommended for distribution builds.
+| Level | Zstd Level | Use Case |
+|-------|-----------|----------|
+| Fast | 3 | Quick builds, CI |
+| Balanced | 12 | Default, good balance |
+| Maximum | 19 | Distribution builds |
+
+### Advanced Compression Pipeline
+
+The `pbin-compress` crate supports additional techniques:
+
+1. **BCJ Filters**: Branch/Call/Jump filters normalize relative addresses in executable code, improving compression by 1-2%. Supported architectures: x86, x86_64, ARM, ARM64, RISC-V, PPC64.
+
+2. **Delta Compression**: Similar binaries (same architecture, different OS) can be stored as delta patches from a reference binary using bidiff.
+
+3. **Dictionary Training**: When packing 4+ binaries, zstd dictionary training learns common patterns for better compression.
+
+**Note**: BCJ filtering requires native decompression. The polyglot stub only supports plain zstd decompression. Use `--no-bcj` for direct-execution PBINs.
 
 ## Binary Payloads
 

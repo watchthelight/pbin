@@ -1,0 +1,19 @@
+[package]
+name = "pbin-compress"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Advanced compression pipeline for PBIN format"
+
+[dependencies]
+pbin-core.workspace = true
+zstd = "0.13"
+bidiff = "1"
+bipatch = "1"
+thiserror = "2"
+goblin = "0.9"               # ELF/Mach-O/PE parsing
+memmap2 = "0.9"              # Memory-mapped file access
+blake3 = "1"                 # Fast hashing for segment dedup
+
+[dev-dependencies]
+tempfile = "3"
