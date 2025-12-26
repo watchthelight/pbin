@@ -1,0 +1,31 @@
+name: Linux ppc64le
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: powerpc64le-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-powerpc64le-linux-gnu qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_POWERPC64LE_UNKNOWN_LINUX_GNU_LINKER=powerpc64le-linux-gnu-gcc
+          cargo build --release -p hello --target powerpc64le-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-ppc64le ./target/powerpc64le-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/powerpc64le-unknown-linux-gnu/release/hello
+          echo "yes" | qemu-ppc64le -L /usr/powerpc64le-linux-gnu ./target/powerpc64le-unknown-linux-gnu/release/hello

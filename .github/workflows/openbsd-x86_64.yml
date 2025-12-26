@@ -1,0 +1,17 @@
+name: OpenBSD x86_64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          rustup target add x86_64-unknown-openbsd || echo "OpenBSD target may need nightly"
+      - run: cargo build --release -p pbin-pack

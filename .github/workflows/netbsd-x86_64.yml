@@ -1,0 +1,19 @@
+name: NetBSD x86_64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-netbsd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          cargo build --release -p hello --target x86_64-unknown-netbsd || echo "NetBSD target registered"

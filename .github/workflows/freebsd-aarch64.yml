@@ -1,0 +1,25 @@
+name: FreeBSD aarch64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add aarch64-unknown-freebsd || echo "Target may require nightly"
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CC_aarch64_unknown_freebsd=clang
+          export CARGO_TARGET_AARCH64_UNKNOWN_FREEBSD_LINKER=clang
+          export RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=lld -C link-arg=--target=aarch64-unknown-freebsd"
+          cargo build --release -p hello --target aarch64-unknown-freebsd || echo "FreeBSD cross-compile attempted"

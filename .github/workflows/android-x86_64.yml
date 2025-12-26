@@ -1,0 +1,28 @@
+name: Android x86_64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android24-clang
+          cargo build --release -p hello --target x86_64-linux-android
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --android-x86_64 ./target/x86_64-linux-android/release/hello \
+            --output hello.pbin

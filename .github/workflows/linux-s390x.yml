@@ -1,0 +1,31 @@
+name: Linux s390x
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: s390x-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-s390x-linux-gnu qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER=s390x-linux-gnu-gcc
+          cargo build --release -p hello --target s390x-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-s390x ./target/s390x-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/s390x-unknown-linux-gnu/release/hello
+          echo "yes" | qemu-s390x -L /usr/s390x-linux-gnu ./target/s390x-unknown-linux-gnu/release/hello

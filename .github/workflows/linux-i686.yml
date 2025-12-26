@@ -1,0 +1,29 @@
+name: Linux i686
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-unknown-linux-gnu
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib zstd
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target i686-unknown-linux-gnu
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-i686 ./target/i686-unknown-linux-gnu/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/i686-unknown-linux-gnu/release/hello
+          echo "yes" | ./target/i686-unknown-linux-gnu/release/hello

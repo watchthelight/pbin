@@ -1,0 +1,22 @@
+name: Linux aarch64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: cargo build --release -p hello -p pbin-pack
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --compress balanced --no-bcj \
+            --linux-aarch64 ./target/release/hello \
+            --output hello.pbin
+      - run: chmod +x hello.pbin && echo "yes" | ./hello.pbin

@@ -1,0 +1,31 @@
+name: Linux armv7
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: armv7-unknown-linux-gnueabihf
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-linux-gnueabihf qemu-user zstd
+      - run: cargo build --release -p pbin-pack
+      - run: |
+          export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+          cargo build --release -p hello --target armv7-unknown-linux-gnueabihf
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --linux-armv7 ./target/armv7-unknown-linux-gnueabihf/release/hello \
+            --output hello.pbin
+      - run: |
+          chmod +x ./target/armv7-unknown-linux-gnueabihf/release/hello
+          echo "yes" | qemu-arm -L /usr/arm-linux-gnueabihf ./target/armv7-unknown-linux-gnueabihf/release/hello

@@ -1,0 +1,23 @@
+name: WASI wasm32
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target wasm32-wasip1
+      - run: |
+          ./target/release/pbin-pack --name hello --version 1.0.0 \
+            --no-compress \
+            --wasi-wasm32 ./target/wasm32-wasip1/release/hello.wasm \
+            --output hello.pbin

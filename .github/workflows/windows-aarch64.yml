@@ -1,0 +1,22 @@
+name: Windows aarch64
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-pc-windows-msvc
+      - run: cargo build --release -p pbin-pack
+      - run: cargo build --release -p hello --target aarch64-pc-windows-msvc
+      - run: |
+          .\target\release\pbin-pack.exe --name hello --version 1.0.0 `
+            --no-compress --windows-aarch64 .\target\aarch64-pc-windows-msvc\release\hello.exe `
+            --output hello.pbin
