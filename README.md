@@ -1,14 +1,21 @@
 # PBIN - Polyglot Binary Format
 
+[![Linux x86_64](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-linux-x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+[![Linux ARM64](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-linux-arm64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+[![macOS x86_64](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-macos-x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+[![macOS ARM64](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-macos-arm64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+[![Windows x86_64](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-windows-x86_64)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+[![Rust Tests](https://github.com/watchthelight/pbin/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test-rust)](https://github.com/watchthelight/pbin/actions/workflows/ci.yml)
+
 A revolutionary file format and toolchain that enables single-file, cross-platform executables. A `.pbin` file runs on any supported system with just `./file.pbin` (Unix) or double-click (Windows) - no installation, no runtime dependencies, no setup.
 
 ## Supported Platforms
 
-| OS      | Architectures              |
-|---------|----------------------------|
-| Linux   | x86_64, aarch64, riscv64   |
-| macOS   | x86_64, aarch64 (Apple Silicon) |
-| Windows | x86_64, aarch64            |
+| OS      | Architectures              | Status |
+|---------|----------------------------|--------|
+| Linux   | x86_64, aarch64            | ✅ |
+| macOS   | x86_64, aarch64 (Apple Silicon) | ✅ |
+| Windows | x86_64                     | ✅ |
 
 ## How It Works
 
@@ -20,7 +27,7 @@ PBIN uses a polyglot header strategy - a file that is simultaneously:
 When executed, the polyglot stub:
 1. Detects the current OS and architecture
 2. Locates the correct embedded binary
-3. Extracts and decompresses it to a temp location
+3. Extracts it to a temp location
 4. Executes it with all original arguments
 5. Cleans up on exit
 
@@ -46,11 +53,14 @@ pbin-pack \
 # Build all tools
 cargo build --release
 
-# Build test payload for all targets
+# Build test payload for available targets
 ./scripts/build-all-targets.sh
 
 # Create example .pbin
-cargo run -p pbin-pack -- [options]
+./target/release/pbin-pack \
+  --name hello \
+  --darwin-aarch64 ./target/pbin-payloads/hello-darwin-aarch64 \
+  --output hello.pbin
 ```
 
 ## Project Structure
